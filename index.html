@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Campaign Game</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f4; padding: 20px; }
+        h1 { color: #333; }
+        #game { background: white; padding: 20px; border-radius: 10px; width: 350px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        button { margin: 5px; padding: 10px; font-size: 16px; cursor: pointer; }
+        #chart_div { width: 100%; height: 300px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>Election Campaign Game</h1>
+    <div id="game">
+        <p><b>Funds:</b> $<span id="funds">10000</span></p>
+        <p><b>Your Supporters:</b> <span id="supporters">100</span></p>
+        <p><b>Opponent's Supporters:</b> <span id="opponentSupporters">100</span></p>
+        <p><b>Turn:</b> <span id="turn">1</span> / 50</p>
+
+        <button onclick="campaign('rally')">Hold Rally ($2000)</button><br>
+        <button onclick="campaign('ads')">Run Ads ($3000)</button><br>
+        <button onclick="campaign('debate')">Debate (Free)</button><br>
+        <button onclick="nextTurn()">Next Turn</button>
+
+        <p id="status"></p>
+    </div>
+
+    <div id="chart_div"></div>
+
+    <script>
+        let funds = 10000;
+        let supporters = 100;
+        let opponentSupporters = 100;
+        let turn = 1;
+        let history = [["Turn", "Your Supporters", "Opponent Supporters"]];
+
+        google.charts.load("current", {packages:["corechart"]});
+
+        function campaign(action) {
+            if (turn > 50) return;
+
+            let effect = 0;
+            if (action === "rally" && funds >= 2000) {
+                funds -= 2000;
+                effect = Math.floor(Math.random() * 15) + 10;
+            } else if (action === "ads" && funds >= 3000) {
+                funds -= 3000;
+                effect = Math.floor(Math.random() * 25) + 15;
+            } else if (action === "debate") {
+                effect = Math.floor(Math.random() * 10) + 5;
+            } else {
+                alert("Not enough funds!");
+                return;
+            }
+
+            supporters += effect;
+            updateUI();
+        }
+
+        function nextTurn() {
+            if (turn >= 50) {
+                let result = supporters > opponentSupporters ? "You win the election!" : "Your opponent wins!";
+                document.getElementById("status").innerText = result;
+                return;
+            }
+            opponentSupporters += Math.floor(Math.random() * 20);
+            supporters += Math.floor(Math.random() * 10);
+
+
+
+            turn++;
+            history.push([turn, supporters, opponentSupporters]);
+            updateUI();
+            drawChart();
+        }
+
+        function updateUI() {
+            document.getElementById("funds").innerText = funds;
+            document.getElementById("supporters").innerText = supporters;
+            document.getElementById("opponentSupporters").innerText = opponentSupporters;
+            document.getElementById("turn").innerText = turn;
+        }
+
+        function drawChart() {
+            let data = google.visualization.arrayToDataTable(history);
+            let options = { title: "Supporters Over Time", curveType: "function", legend: { position: "bottom" } };
+            let chart = new google.visualization.LineChart(document.getElementById("chart_div"));
+            chart.draw(data, options);
+        }
+
+        updateUI();
+    </script>
+
+</body>
+</html>
